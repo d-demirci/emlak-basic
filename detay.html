@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">İlan Detayı — Emlak Vitrin</title>
+  <meta name="description" id="page-desc" content="Emlak ilan detayı" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🏠</div>
+      <div class="logo-text">
+        <span class="logo-name" id="h-sirket">Emlak Vitrin</span>
+        <span class="logo-sub" id="h-slogan">Gayrimenkul Danışmanlığı</span>
+      </div>
+    </a>
+
+    <nav class="header-nav">
+      <a href="index.html">Anasayfa</a>
+      <a href="index.html?tip=Satılık">Satılık</a>
+      <a href="index.html?tip=Kiralık">Kiralık</a>
+      <a href="index.html#iletisim">İletişim</a>
+    </nav>
+
+    <div class="header-contact">
+      <a href="#" class="header-phone" id="h-tel-link">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 8V5z"/>
+        </svg>
+        <span class="phone-text" id="h-tel-text">+90 532 000 00 00</span>
+      </a>
+      <a href="#" class="btn-wa-header" id="h-wa-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.523 5.847L.057 23.882l6.19-1.443A11.938 11.938 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.897 0-3.67-.513-5.197-1.41l-.372-.221-3.856.898.934-3.741-.242-.386A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+        </svg>
+        WhatsApp
+      </a>
+    </div>
+
+    <button class="menu-toggle" id="menu-toggle" aria-label="Menü">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile nav -->
+<nav class="mobile-nav" id="mobile-nav">
+  <a href="index.html">🏠 Anasayfa</a>
+  <a href="index.html?tip=Satılık">🔑 Satılık İlanlar</a>
+  <a href="index.html?tip=Kiralık">🏷️ Kiralık İlanlar</a>
+  <a href="index.html#iletisim">📞 İletişim</a>
+  <div class="mobile-nav-contact">
+    <a href="#" class="btn-call" id="m-tel-link">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 8V5z"/>
+      </svg>
+      <span id="m-tel-text">Ara</span>
+    </a>
+    <a href="#" class="btn-wa" id="m-wa-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.523 5.847L.057 23.882l6.19-1.443A11.938 11.938 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.897 0-3.67-.513-5.197-1.41l-.372-.221-3.856.898.934-3.741-.242-.386A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+      </svg>
+      WhatsApp
+    </a>
+  </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main>
+  <div class="detay-wrapper" id="detay-wrapper">
+
+    <!-- LEFT: Main content -->
+    <div class="detay-main" id="detay-main">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" id="breadcrumb">
+        <a href="index.html">Anasayfa</a>
+        <span>›</span>
+        <span id="bc-tip">İlanlar</span>
+        <span>›</span>
+        <span id="bc-baslik">İlan Detayı</span>
+      </nav>
+
+      <!-- Property header -->
+      <div class="detay-header">
+        <div class="detay-badges" id="detay-badges">
+          <!-- JS ile doldurulur -->
+        </div>
+        <h1 class="detay-title" id="detay-title">Yükleniyor...</h1>
+        <div class="detay-location" id="detay-location">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span id="detay-konum">—</span>
+        </div>
+        <div class="detay-price-row">
+          <div class="detay-price" id="detay-price">—</div>
+          <div class="detay-date" id="detay-date"></div>
+        </div>
+      </div>
+
+      <!-- Gallery -->
+      <div class="gallery-main" id="gallery-main" onclick="lightboxOpen(0)">
+        <img id="gallery-main-img" src="" alt="İlan fotoğrafı" />
+        <div class="gallery-main-overlay" id="gallery-overlay">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span id="gallery-overlay-text">Tüm fotoğrafları gör</span>
+        </div>
+      </div>
+      <div class="gallery-thumbs" id="gallery-thumbs">
+        <!-- JS ile doldurulur -->
+      </div>
+
+      <!-- Specs -->
+      <div class="specs-grid" id="specs-grid">
+        <!-- JS ile doldurulur -->
+      </div>
+
+      <!-- Description -->
+      <div class="detay-aciklama">
+        <h3>İlan Açıklaması</h3>
+        <p id="detay-aciklama-text">—</p>
+      </div>
+
+      <!-- Features -->
+      <div class="detay-ozellikler" id="detay-ozellikler-wrap">
+        <h3>Özellikler</h3>
+        <div class="ozellik-tags" id="ozellik-tags">
+          <!-- JS ile doldurulur -->
+        </div>
+      </div>
+
+    </div><!-- /detay-main -->
+
+    <!-- RIGHT: Sidebar -->
+    <aside class="detay-sidebar">
+      <div class="contact-card">
+        <div class="contact-card-header">
+          <h3>Bu İlan Hakkında Bilgi Alın</h3>
+          <p>Size en kısa sürede dönüş yapılacaktır.</p>
+        </div>
+        <div class="agent-row">
+          <div class="agent-avatar">👤</div>
+          <div>
+            <div class="agent-name" id="agent-name">Ad Soyad</div>
+            <div class="agent-title" id="agent-title">Gayrimenkul Danışmanı</div>
+          </div>
+        </div>
+        <div class="contact-card-body">
+          <a href="#" class="btn-contact wa" id="sidebar-wa">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.523 5.847L.057 23.882l6.19-1.443A11.938 11.938 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.897 0-3.67-.513-5.197-1.41l-.372-.221-3.856.898.934-3.741-.242-.386A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+            </svg>
+            WhatsApp ile Yaz
+          </a>
+          <a href="#" class="btn-contact tel" id="sidebar-tel">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 8V5z"/>
+            </svg>
+            Telefon ile Ara
+          </a>
+        </div>
+        <div class="contact-card-note">
+          💡 Görüntüleme randevusu, fiyat bilgisi ve detaylı sorularınız için iletişime geçebilirsiniz.
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /detay-wrapper -->
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="index.html" class="logo footer-logo">
+      <div class="logo-icon">🏠</div>
+      <div class="logo-text">
+        <span class="logo-name" id="f-sirket">Emlak Vitrin</span>
+        <span class="logo-sub" id="f-slogan">Gayrimenkul Danışmanlığı</span>
+      </div>
+    </a>
+    <div class="footer-links">
+      <a href="index.html">Anasayfa</a>
+      <a href="index.html?tip=Satılık">Satılık</a>
+      <a href="index.html?tip=Kiralık">Kiralık</a>
+      <a href="index.html#iletisim">İletişim</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p id="f-copyright">© 2026 Emlak Vitrin. Tüm hakları saklıdır.</p>
+  </div>
+</footer>
+
+<!-- ===== FLOATING WA ===== -->
+<a href="#" class="wa-float" id="wa-float">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.523 5.847L.057 23.882l6.19-1.443A11.938 11.938 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.897 0-3.67-.513-5.197-1.41l-.372-.221-3.856.898.934-3.741-.242-.386A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+  </svg>
+  WhatsApp ile Yazın
+</a>
+
+<!-- ===== LIGHTBOX ===== -->
+<div class="lightbox-overlay" id="lightbox" onclick="lightboxClose(event)">
+  <button class="lb-close" onclick="lightboxClose({target:this})">
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+  </button>
+  <div class="lightbox-img-wrap">
+    <button class="lb-btn lb-prev" onclick="lightboxNav(-1,event)">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <img id="lb-img" src="" alt="Fotoğraf" />
+    <button class="lb-btn lb-next" onclick="lightboxNav(1,event)">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+  <div class="lb-counter" id="lb-counter">1 / 1</div>
+</div>
+
+<script src="js/ilanlar.js"></script>
+<script src="js/detay.js"></script>
+</body>
+</html>

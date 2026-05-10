@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Paneli — Emlak Vitrin</title>
+  <style>
+    :root {
+      --navy:#162447; --navy2:#1f4068; --gold:#c9a84c;
+      --bg:#f4f6fb; --white:#fff; --border:#e2e8f0;
+      --text:#1a202c; --muted:#718096;
+      --red:#ef4444; --green:#22c55e; --blue:#3b82f6;
+      --r:10px; --sh:0 4px 20px rgba(22,36,71,.1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+    input,select,textarea,button{font:inherit}
+    button{cursor:pointer;border:none}
+
+    /* ---- PASSWORD SCREEN ---- */
+    #pw-screen{
+      position:fixed;inset:0;background:var(--navy);
+      display:flex;align-items:center;justify-content:center;z-index:9999;
+    }
+    #pw-box{
+      background:var(--white);border-radius:16px;padding:40px;
+      width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);
+    }
+    #pw-box h1{font-size:22px;color:var(--navy);margin-bottom:6px}
+    #pw-box p{color:var(--muted);font-size:13px;margin-bottom:24px}
+    #pw-input{
+      width:100%;padding:12px 16px;border:2px solid var(--border);
+      border-radius:8px;font-size:15px;outline:none;
+      transition:.2s;margin-bottom:12px;
+    }
+    #pw-input:focus{border-color:var(--navy)}
+    #pw-btn{
+      width:100%;padding:12px;background:var(--navy);color:#fff;
+      border-radius:8px;font-size:15px;font-weight:700;transition:.2s;
+    }
+    #pw-btn:hover{background:var(--navy2)}
+    #pw-error{color:var(--red);font-size:13px;margin-top:10px;min-height:18px}
+
+    /* ---- PANEL ---- */
+    #panel{display:none;min-height:100vh}
+    .adm-header{
+      background:var(--navy);color:#fff;
+      padding:0 24px;height:60px;
+      display:flex;align-items:center;gap:16px;
+      position:sticky;top:0;z-index:100;
+      box-shadow:0 2px 12px rgba(0,0,0,.3);
+    }
+    .adm-logo{font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px}
+    .adm-logo span{background:var(--gold);color:var(--navy);padding:4px 8px;border-radius:6px;font-size:12px}
+    .adm-header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+    .adm-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;
+      transition:.2s;cursor:pointer;border:none;
+    }
+    .adm-btn-primary{background:var(--gold);color:var(--navy)}
+    .adm-btn-primary:hover{background:#b8935a}
+    .adm-btn-ghost{background:rgba(255,255,255,.1);color:#fff}
+    .adm-btn-ghost:hover{background:rgba(255,255,255,.2)}
+    .adm-btn-danger{background:var(--red);color:#fff}
+    .adm-btn-danger:hover{background:#dc2626}
+    .adm-btn-success{background:var(--green);color:#fff}
+    .adm-btn-success:hover{background:#16a34a}
+    .adm-btn-blue{background:var(--blue);color:#fff}
+    .adm-btn-blue:hover{background:#2563eb}
+    .adm-btn-sm{padding:6px 12px;font-size:12px}
+
+    /* ---- LIST VIEW ---- */
+    .adm-content{max-width:1100px;margin:0 auto;padding:28px 24px}
+    .adm-toolbar{
+      display:flex;align-items:center;gap:12px;
+      margin-bottom:24px;flex-wrap:wrap;
+    }
+    .adm-toolbar h2{font-size:20px;font-weight:800;color:var(--navy);flex:1}
+    .ilan-list{display:flex;flex-direction:column;gap:12px}
+    .ilan-item{
+      background:var(--white);border:1px solid var(--border);
+      border-radius:var(--r);padding:16px 20px;
+      display:flex;align-items:center;gap:16px;
+      box-shadow:var(--sh);transition:.2s;
+    }
+    .ilan-item:hover{box-shadow:0 8px 32px rgba(22,36,71,.12)}
+    .ilan-item-img{
+      width:80px;height:60px;border-radius:8px;
+      object-fit:cover;flex-shrink:0;background:#dde3ef;
+    }
+    .ilan-item-info{flex:1;min-width:0}
+    .ilan-item-title{font-weight:700;font-size:15px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ilan-item-meta{font-size:13px;color:var(--muted);margin-top:4px}
+    .ilan-item-price{font-weight:800;font-size:16px;color:var(--navy);white-space:nowrap}
+    .ilan-item-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+    .badge{
+      display:inline-block;padding:3px 10px;border-radius:20px;
+      font-size:11px;font-weight:700;
+    }
+    .badge-s{background:#e8f0fb;color:var(--navy)}
+    .badge-k{background:#e0f2fe;color:#0369a1}
+    .badge-aktif{background:#dcfce7;color:#166534}
+    .badge-pasif{background:#fef2f2;color:#991b1b}
+    .badge-one{background:#fef9ec;color:#92400e}
+    .empty-msg{text-align:center;padding:60px;color:var(--muted);font-size:15px}
+
+    /* ---- TOAST ---- */
+    #toast{
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+      background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;
+      font-size:14px;font-weight:600;transition:.3s;z-index:9000;
+      box-shadow:0 8px 32px rgba(0,0,0,.2);pointer-events:none;
+    }
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    /* ---- FORM VIEW ---- */
+    #form-view{display:none}
+    .form-header{
+      display:flex;align-items:center;gap:12px;margin-bottom:28px;
+    }
+    .form-header h2{font-size:20px;font-weight:800;color:var(--navy)}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .form-full{grid-column:1/-1}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-group label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+    .form-group input,
+    .form-group select,
+    .form-group textarea{
+      padding:10px 14px;border:2px solid var(--border);
+      border-radius:8px;font-size:14px;outline:none;
+      background:var(--white);transition:.2s;
+      width:100%;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus{border-color:var(--navy)}
+    .form-group textarea{resize:vertical;min-height:100px}
+    .form-group .hint{font-size:11px;color:var(--muted)}
+    .form-section{
+      background:var(--white);border:1px solid var(--border);
+      border-radius:var(--r);padding:20px;margin-bottom:20px;
+    }
+    .form-section h3{
+      font-size:14px;font-weight:700;color:var(--navy);
+      margin-bottom:16px;padding-bottom:10px;
+      border-bottom:1px solid var(--border);
+    }
+    .form-footer{
+      display:flex;justify-content:space-between;align-items:center;
+      padding-top:20px;margin-top:20px;
+      border-top:1px solid var(--border);gap:12px;
+      flex-wrap:wrap;
+    }
+
+    /* Ozellikler checkboxes */
+    .ozellik-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;
+    }
+    .ozellik-cb{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 12px;border:2px solid var(--border);border-radius:8px;
+      cursor:pointer;transition:.2s;user-select:none;
+      font-size:13px;font-weight:500;
+    }
+    .ozellik-cb:has(input:checked){border-color:var(--navy);background:#eef2ff}
+    .ozellik-cb input{width:15px;height:15px;cursor:pointer;accent-color:var(--navy)}
+    .custom-ozellik-row{display:flex;gap:8px;margin-top:10px}
+    .custom-ozellik-row input{flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none}
+    .custom-ozellik-row input:focus{border-color:var(--navy)}
+    .custom-ozellikler{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .custom-tag{
+      display:flex;align-items:center;gap:4px;
+      background:#eef2ff;border:1px solid #c7d2fe;
+      color:var(--navy);padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;
+    }
+    .custom-tag button{background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;line-height:1;padding:0 2px}
+
+    /* Fotograflar */
+    .foto-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+    .foto-row{display:flex;align-items:center;gap:8px}
+    .foto-row input{flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none}
+    .foto-row input:focus{border-color:var(--navy)}
+    .foto-preview{width:48px;height:36px;object-fit:cover;border-radius:6px;background:#dde3ef;flex-shrink:0;border:1px solid var(--border)}
+    .foto-del{width:32px;height:32px;background:var(--red);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:bold}
+    .foto-del:hover{background:#dc2626}
+
+    /* Switches */
+    .switch-group{display:flex;gap:20px;flex-wrap:wrap}
+    .switch-label{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600}
+    .switch-label input[type=checkbox]{width:44px;height:24px;cursor:pointer;accent-color:var(--navy)}
+
+    /* Info bar */
+    .info-bar{
+      background:#fffbeb;border:1px solid #fde68a;border-radius:8px;
+      padding:12px 16px;font-size:13px;color:#92400e;
+      margin-bottom:20px;display:flex;align-items:flex-start;gap:8px;
+    }
+
+    @media(max-width:640px){
+      .form-grid{grid-template-columns:1fr}
+      .form-full{grid-column:1}
+      .ilan-item{flex-direction:column;align-items:flex-start}
+      .ilan-item-img{width:100%;height:140px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== PASSWORD SCREEN ===== -->
+<div id="pw-screen">
+  <div id="pw-box">
+    <h1>🏠 Admin Paneli</h1>
+    <p>Devam etmek için şifrenizi girin</p>
+    <input type="password" id="pw-input" placeholder="Şifre" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')checkPass()" />
+    <button class="adm-btn adm-btn-primary" id="pw-btn" onclick="checkPass()" style="width:100%;padding:12px;font-size:15px">Giriş Yap</button>
+    <p id="pw-error"></p>
+  </div>
+</div>
+
+<!-- ===== PANEL ===== -->
+<div id="panel">
+  <header class="adm-header">
+    <div class="adm-logo">🏠 <span>ADMİN</span> Emlak Vitrin</div>
+    <div class="adm-header-right">
+      <a href="index.html" target="_blank" class="adm-btn adm-btn-ghost" style="font-size:13px">
+        🌐 Siteyi Gör
+      </a>
+      <button class="adm-btn adm-btn-success" onclick="downloadJS()" id="btn-download" title="ilanlar.js dosyasını indir">
+        📥 ilanlar.js İndir
+      </button>
+      <button class="adm-btn" id="btn-publish" onclick="publishIlanlar()"
+        style="display:none;background:#7c3aed;color:#fff">
+        🚀 Yayınla
+      </button>
+      <button class="adm-btn adm-btn-ghost" onclick="logout()">Çıkış</button>
+    </div>
+  </header>
+
+  <!-- LIST VIEW -->
+  <div class="adm-content" id="list-view">
+    <div class="adm-toolbar">
+      <h2 id="list-title">İlanlar</h2>
+      <button class="adm-btn adm-btn-primary" onclick="showForm(null)">+ Yeni İlan Ekle</button>
+    </div>
+    <div class="info-bar">
+      ℹ️ Yaptığınız değişiklikler bu tarayıcıda otomatik kaydedilir. Siteyi farklı bir cihaza veya hostinge yükleyecekseniz <strong>📥 ilanlar.js İndir</strong> butonuna tıklayıp indirilen dosyayı <code>js/ilanlar.js</code> ile değiştirin.
+    </div>
+    <div class="ilan-list" id="ilan-list"></div>
+  </div>
+
+  <!-- FORM VIEW -->
+  <div class="adm-content" id="form-view">
+    <div class="form-header">
+      <button class="adm-btn adm-btn-ghost" onclick="showList()" style="background:#e2e8f0;color:var(--text)">← Geri</button>
+      <h2 id="form-title">Yeni İlan Ekle</h2>
+    </div>
+
+    <!-- Temel Bilgiler -->
+    <div class="form-section">
+      <h3>📋 Temel Bilgiler</h3>
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>İlan Başlığı *</label>
+          <input type="text" id="f-baslik" placeholder="Örn: Kadıköy'de Satılık 3+1 Daire" />
+        </div>
+        <div class="form-group">
+          <label>İlan Tipi *</label>
+          <select id="f-tip" onchange="autoFiyatText()">
+            <option value="Satılık">Satılık</option>
+            <option value="Kiralık">Kiralık</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Kategori *</label>
+          <select id="f-kategori">
+            <option value="Daire">Daire</option>
+            <option value="Villa">Villa</option>
+            <option value="Dükkan">Dükkan</option>
+            <option value="Arsa">Arsa</option>
+            <option value="Bina">Bina</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label>Konum</label>
+          <input type="text" id="f-konum" placeholder="Örn: Kadıköy, İstanbul" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Fiyat -->
+    <div class="form-section">
+      <h3>💰 Fiyat</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fiyat (Sayı) *</label>
+          <input type="number" id="f-fiyat" placeholder="Örn: 4500000" oninput="autoFiyatText()" />
+          <span class="hint">Sıralama için kullanılır</span>
+        </div>
+        <div class="form-group">
+          <label>Fiyat Gösterimi</label>
+          <input type="text" id="f-fiyatText" placeholder="Örn: 4.500.000 ₺" />
+          <span class="hint">Boş bırakırsanız otomatik oluşturulur</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detaylar -->
+    <div class="form-section">
+      <h3>🏠 Mülk Detayları</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Alan (m²)</label>
+          <input type="number" id="f-m2" placeholder="Örn: 120" />
+        </div>
+        <div class="form-group">
+          <label>Oda Sayısı</label>
+          <input type="text" id="f-oda" placeholder="Örn: 3+1" />
+        </div>
+        <div class="form-group">
+          <label>Banyo</label>
+          <input type="number" id="f-banyo" placeholder="Örn: 2" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Kat</label>
+          <input type="text" id="f-kat" placeholder="Örn: 5/8 veya Zemin" />
+        </div>
+        <div class="form-group">
+          <label>Bina Yaşı</label>
+          <input type="number" id="f-bina-yasi" placeholder="Örn: 5" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Isıtma</label>
+          <input type="text" id="f-isitma" placeholder="Örn: Doğalgaz Kombi" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Aciklama -->
+    <div class="form-section">
+      <h3>📝 Açıklama</h3>
+      <div class="form-group">
+        <textarea id="f-aciklama" rows="6" placeholder="İlan açıklamasını buraya yazın..."></textarea>
+      </div>
+    </div>
+
+    <!-- Fotograflar -->
+    <div class="form-section">
+      <h3>📸 Fotoğraflar</h3>
+      <div class="hint" style="margin-bottom:10px">
+        Fotoğrafları <code>img/</code> klasörüne koyup <code>img/foto1.jpg</code> şeklinde yazabilir veya tam URL girebilirsiniz.
+      </div>
+      <div class="foto-list" id="foto-list"></div>
+      <button class="adm-btn" onclick="addFotoRow()" style="background:#e2e8f0;color:var(--text)">+ Fotoğraf Ekle</button>
+
+      <div class="form-group" style="margin-top:16px">
+        <label>Kapak Fotoğrafı URL'si</label>
+        <input type="text" id="f-kapak" placeholder="Örn: img/kapak.jpg" />
+        <span class="hint">Boş bırakırsanız ilk fotoğraf kapak olarak kullanılır</span>
+      </div>
+    </div>
+
+    <!-- Ozellikler -->
+    <div class="form-section">
+      <h3>✅ Özellikler</h3>
+      <div class="ozellik-grid" id="ozellik-grid"></div>
+      <div class="custom-ozellik-row">
+        <input type="text" id="custom-oz-input" placeholder="Özel özellik ekle..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomOz()}" />
+        <button class="adm-btn" onclick="addCustomOz()" style="background:#e2e8f0;color:var(--text)">+ Ekle</button>
+      </div>
+      <div class="custom-ozellikler" id="custom-ozellikler"></div>
+    </div>
+
+    <!-- Ayarlar -->
+    <div class="form-section">
+      <h3>⚙️ Ayarlar</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>İlan Tarihi</label>
+          <input type="date" id="f-tarih" />
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <div class="switch-group">
+            <label class="switch-label">
+              <input type="checkbox" id="f-aktif" checked /> Aktif
+            </label>
+            <label class="switch-label">
+              <input type="checkbox" id="f-one-cikan" /> Öne Çıkan
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button class="adm-btn adm-btn-danger" id="btn-delete" onclick="deleteCurrentIlan()" style="display:none">
+        🗑️ İlanı Sil
+      </button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="adm-btn" onclick="showList()" style="background:#e2e8f0;color:var(--text)">İptal</button>
+        <button class="adm-btn adm-btn-primary" onclick="saveIlan()" id="btn-save-form" style="font-size:15px;padding:10px 28px">💾 Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="js/ilanlar.js"></script>
+<script>
+// =====================================================
+//  ⚙️  ADMIN ŞİFRESİ — Sadece lokal için (Railway'de sunucu yönetir)
+// =====================================================
+const ADMIN_SIFRE = "admin1234";
+const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+// =====================================================
+//  Sabit özellik listesi
+// =====================================================
+const OZELLIK_LISTESI = [
+  "Asansör","Güvenlik","Kapalı Otopark","Açık Otopark",
+  "Balkon","Teras","Bahçe","Doğalgaz","Klima",
+  "Ebeveyn Banyosu","Amerikan Mutfak","Çelik Kapı",
+  "Isıcamlı Pencere","Beyaz Eşya","Giyinme Odası",
+  "Havuz","Jakuzi","Jeneratör","Akıllı Ev","Yerden Isıtma",
+  "Site İçi","7/24 Güvenlik","Depo","Garaj"
+];
+
+let editingId = null;  // null = yeni ilan, number = düzenleme
+let customOzler = [];  // custom özellikler (checkbox dışı)
+let data = [];
+
+// ---- PASSWORD ----
+function checkPass() {
+  const val = document.getElementById("pw-input").value;
+  if (val === ADMIN_SIFRE) {
+    sessionStorage.setItem("emlak_admin", "1");
+    document.getElementById("pw-screen").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    init();
+  } else {
+    document.getElementById("pw-error").textContent = "Hatalı şifre. Tekrar deneyin.";
+    document.getElementById("pw-input").value = "";
+    document.getElementById("pw-input").focus();
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem("emlak_admin");
+  location.reload();
+}
+
+// ---- INIT ----
+function init() {
+  loadData();
+  buildOzellikGrid();
+  showList();
+}
+
+function loadData() {
+  if (!IS_LOCAL) {
+    // Railway: her zaman sunucudaki güncel ilanlar.js'den oku
+    data = deepCopy(ILANLAR);
+    return;
+  }
+  const stored = localStorage.getItem("emlak_ilanlar");
+  if (stored) {
+    try { data = JSON.parse(stored); } catch(e) { data = deepCopy(ILANLAR); }
+  } else {
+    data = deepCopy(ILANLAR);
+  }
+}
+
+function saveData() {
+  localStorage.setItem("emlak_ilanlar", JSON.stringify(data));
+  // Live-update the global ILANLAR array so the site reflects changes immediately
+  ILANLAR.splice(0, ILANLAR.length, ...data);
+}
+
+function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+// ---- LIST VIEW ----
+function showList() {
+  document.getElementById("list-view").style.display = "block";
+  document.getElementById("form-view").style.display = "none";
+  renderList();
+}
+
+function renderList() {
+  const el = document.getElementById("ilan-list");
+  const title = document.getElementById("list-title");
+  title.textContent = `İlanlar (${data.length})`;
+
+  if (!data.length) {
+    el.innerHTML = '<div class="empty-msg">Henüz ilan yok. "+ Yeni İlan Ekle" ile başlayın.</div>';
+    return;
+  }
+
+  el.innerHTML = data.map(ilan => `
+    <div class="ilan-item">
+      <img class="ilan-item-img" src="${ilan.kapakFoto || ''}" alt="" onerror="this.style.background='#dde3ef';this.src=''" />
+      <div class="ilan-item-info">
+        <div class="ilan-item-title">${ilan.baslik || '(Başlıksız)'}</div>
+        <div class="ilan-item-meta">
+          <span class="badge ${ilan.tip==='Satılık'?'badge-s':'badge-k'}">${ilan.tip}</span>
+          ${ilan.oneCikan ? '<span class="badge badge-one">⭐ Öne Çıkan</span>' : ''}
+          <span class="badge ${ilan.aktif?'badge-aktif':'badge-pasif'}">${ilan.aktif?'Aktif':'Pasif'}</span>
+          &nbsp;${ilan.konum||''}
+        </div>
+      </div>
+      <div class="ilan-item-price">${ilan.fiyatText||''}</div>
+      <div class="ilan-item-actions">
+        <a href="detay.html?id=${ilan.id}" target="_blank" class="adm-btn adm-btn-ghost adm-btn-sm" style="background:#e2e8f0;color:var(--text)">👁️</a>
+        <button class="adm-btn adm-btn-blue adm-btn-sm" onclick="showForm(${ilan.id})">✏️ Düzenle</button>
+        <button class="adm-btn adm-btn-danger adm-btn-sm" onclick="confirmDelete(${ilan.id})">🗑️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ---- FORM VIEW ----
+function showForm(id) {
+  editingId = id;
+  document.getElementById("list-view").style.display = "none";
+  document.getElementById("form-view").style.display = "block";
+
+  const del = document.getElementById("btn-delete");
+  customOzler = [];
+
+  if (id === null) {
+    // New
+    document.getElementById("form-title").textContent = "Yeni İlan Ekle";
+    del.style.display = "none";
+    clearForm();
+    // Set today's date
+    document.getElementById("f-tarih").value = new Date().toISOString().slice(0,10);
+  } else {
+    // Edit
+    document.getElementById("form-title").textContent = "İlanı Düzenle";
+    del.style.display = "inline-flex";
+    const ilan = data.find(i => i.id === id);
+    if (ilan) fillForm(ilan);
+  }
+}
+
+function clearForm() {
+  ["f-baslik","f-konum","f-fiyatText","f-oda","f-kat","f-isitma","f-aciklama","f-kapak"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  ["f-fiyat","f-m2","f-banyo","f-bina-yasi"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  document.getElementById("f-tip").value = "Satılık";
+  document.getElementById("f-kategori").value = "Daire";
+  document.getElementById("f-aktif").checked = true;
+  document.getElementById("f-one-cikan").checked = false;
+  // Clear checkboxes
+  document.querySelectorAll(".oz-cb").forEach(cb => cb.checked = false);
+  // Clear photos
+  document.getElementById("foto-list").innerHTML = "";
+  addFotoRow(); // start with one empty row
+  // Clear custom
+  customOzler = [];
+  renderCustomOzler();
+}
+
+function fillForm(ilan) {
+  document.getElementById("f-baslik").value   = ilan.baslik || "";
+  document.getElementById("f-tip").value      = ilan.tip || "Satılık";
+  document.getElementById("f-kategori").value = ilan.kategori || "Daire";
+  document.getElementById("f-konum").value    = ilan.konum || "";
+  document.getElementById("f-fiyat").value    = ilan.fiyat || "";
+  document.getElementById("f-fiyatText").value= ilan.fiyatText || "";
+  document.getElementById("f-m2").value       = ilan.metrekare || "";
+  document.getElementById("f-oda").value      = ilan.oda || "";
+  document.getElementById("f-banyo").value    = ilan.banyo || "";
+  document.getElementById("f-kat").value      = ilan.kat || "";
+  document.getElementById("f-bina-yasi").value= ilan.binaYasi || "";
+  document.getElementById("f-isitma").value   = ilan.isitma || "";
+  document.getElementById("f-aciklama").value = ilan.aciklama || "";
+  document.getElementById("f-kapak").value    = ilan.kapakFoto || "";
+  document.getElementById("f-tarih").value    = ilan.tarih || "";
+  document.getElementById("f-aktif").checked  = ilan.aktif !== false;
+  document.getElementById("f-one-cikan").checked = !!ilan.oneCikan;
+
+  // Photos
+  const fotoListEl = document.getElementById("foto-list");
+  fotoListEl.innerHTML = "";
+  const fotos = ilan.fotograflar || [];
+  if (fotos.length === 0) {
+    addFotoRow();
+  } else {
+    fotos.forEach(url => addFotoRow(url));
+  }
+
+  // Özellikler — split into known vs custom
+  const bilinен = ilan.ozellikler || [];
+  const knownSet = new Set(OZELLIK_LISTESI);
+  customOzler = bilinен.filter(o => !knownSet.has(o));
+  document.querySelectorAll(".oz-cb").forEach(cb => {
+    cb.checked = bilinен.includes(cb.value);
+  });
+  renderCustomOzler();
+}
+
+// ---- SAVE ----
+async function saveIlan() {
+  const baslik = document.getElementById("f-baslik").value.trim();
+  if (!baslik) { showToast("⚠️ İlan başlığı zorunludur."); return; }
+
+  const tip = document.getElementById("f-tip").value;
+  const fiyatNum = parseInt(document.getElementById("f-fiyat").value) || 0;
+  let fiyatText = document.getElementById("f-fiyatText").value.trim();
+  if (!fiyatText && fiyatNum) {
+    fiyatText = fiyatNum.toLocaleString("tr-TR") + " ₺" + (tip === "Kiralık" ? "/ay" : "");
+  }
+
+  // Collect photos
+  const fotos = Array.from(document.querySelectorAll(".foto-input"))
+    .map(inp => inp.value.trim())
+    .filter(Boolean);
+
+  let kapak = document.getElementById("f-kapak").value.trim();
+  if (!kapak && fotos.length) kapak = fotos[0];
+
+  // Collect ozellikler
+  const checkedOz = Array.from(document.querySelectorAll(".oz-cb:checked")).map(cb => cb.value);
+  const ozellikler = [...checkedOz, ...customOzler];
+
+  const ilan = {
+    id:         editingId !== null ? editingId : nextId(),
+    baslik:     baslik,
+    tip:        tip,
+    kategori:   document.getElementById("f-kategori").value,
+    fiyat:      fiyatNum,
+    fiyatText:  fiyatText,
+    konum:      document.getElementById("f-konum").value.trim(),
+    metrekare:  parseInt(document.getElementById("f-m2").value) || 0,
+    oda:        document.getElementById("f-oda").value.trim() || "—",
+    banyo:      parseInt(document.getElementById("f-banyo").value) || 0,
+    kat:        document.getElementById("f-kat").value.trim() || "—",
+    binaYasi:   parseInt(document.getElementById("f-bina-yasi").value) || 0,
+    isitma:     document.getElementById("f-isitma").value.trim() || "—",
+    aciklama:   document.getElementById("f-aciklama").value.trim(),
+    ozellikler: ozellikler,
+    fotograflar: fotos,
+    kapakFoto:  kapak,
+    tarih:      document.getElementById("f-tarih").value || new Date().toISOString().slice(0,10),
+    aktif:      document.getElementById("f-aktif").checked,
+    oneCikan:   document.getElementById("f-one-cikan").checked,
+  };
+
+  if (editingId !== null) {
+    const idx = data.findIndex(i => i.id === editingId);
+    if (idx !== -1) data[idx] = ilan; else data.push(ilan);
+  } else {
+    data.push(ilan);
+  }
+
+  saveData();
+  showList();
+
+  if (!IS_LOCAL) {
+    await publishIlanlar();
+  } else {
+    showToast(editingId !== null ? "✅ İlan güncellendi!" : "✅ Yeni ilan eklendi!");
+  }
+}
+
+function nextId() {
+  return data.length ? Math.max(...data.map(i => i.id)) + 1 : 1;
+}
+
+// ---- DELETE ----
+async function confirmDelete(id) {
+  const ilan = data.find(i => i.id === id);
+  if (!ilan) return;
+  if (confirm(`"${ilan.baslik}" ilanını silmek istediğinize emin misiniz?`)) {
+    data = data.filter(i => i.id !== id);
+    saveData();
+    showList();
+    if (!IS_LOCAL) {
+      await publishIlanlar();
+    } else {
+      showToast("🗑️ İlan silindi.");
+    }
+  }
+}
+
+async function deleteCurrentIlan() {
+  if (editingId !== null) await confirmDelete(editingId);
+}
+
+// ---- PHOTOS ----
+function addFotoRow(url) {
+  const list = document.getElementById("foto-list");
+  const row = document.createElement("div");
+  row.className = "foto-row";
+  row.innerHTML = `
+    <img class="foto-preview" src="${url||''}" onerror="this.style.opacity='.3'" />
+    <input class="foto-input" type="text" placeholder="img/foto.jpg veya https://..." value="${url||''}"
+      oninput="this.previousElementSibling.src=this.value" />
+    <button class="foto-del" onclick="this.parentElement.remove()" title="Sil">×</button>
+  `;
+  list.appendChild(row);
+}
+
+// ---- OZELLIKLER ----
+function buildOzellikGrid() {
+  const grid = document.getElementById("ozellik-grid");
+  grid.innerHTML = OZELLIK_LISTESI.map(oz => `
+    <label class="ozellik-cb">
+      <input type="checkbox" class="oz-cb" value="${oz}" />
+      ${oz}
+    </label>
+  `).join("");
+}
+
+function addCustomOz() {
+  const inp = document.getElementById("custom-oz-input");
+  const val = inp.value.trim();
+  if (!val || customOzler.includes(val)) { inp.value=""; return; }
+  customOzler.push(val);
+  inp.value = "";
+  renderCustomOzler();
+}
+
+function removeCustomOz(i) {
+  customOzler.splice(i, 1);
+  renderCustomOzler();
+}
+
+function renderCustomOzler() {
+  const el = document.getElementById("custom-ozellikler");
+  el.innerHTML = customOzler.map((o,i) => `
+    <div class="custom-tag">${o} <button onclick="removeCustomOz(${i})">×</button></div>
+  `).join("");
+}
+
+// ---- AUTO FIYAT TEXT ----
+function autoFiyatText() {
+  const num = parseInt(document.getElementById("f-fiyat").value);
+  const tip = document.getElementById("f-tip").value;
+  if (!num) return;
+  const el = document.getElementById("f-fiyatText");
+  if (!el.value) {
+    el.value = num.toLocaleString("tr-TR") + " ₺" + (tip === "Kiralık" ? "/ay" : "");
+  }
+}
+
+// ---- PUBLISH → GitHub → Railway auto-deploy ----
+async function publishIlanlar() {
+  const btn = document.getElementById('btn-publish');
+  if (btn) { btn.textContent = '⏳ Yayınlanıyor...'; btn.disabled = true; }
+  showToast('⏳ Site güncelleniyor...');
+  try {
+    const res  = await fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config: CONFIG, ilanlar: data })
+    });
+    const json = await res.json();
+    showToast(json.ok ? '✅ ' + json.msg : '❌ ' + json.msg);
+  } catch (e) {
+    showToast('❌ Bağlantı hatası: ' + e.message);
+  }
+  if (btn) { btn.textContent = '🚀 Yayınla'; btn.disabled = false; }
+}
+
+// ---- DOWNLOAD ilanlar.js ----
+function downloadJS() {
+  const configStr = "const CONFIG = " + JSON.stringify(CONFIG, null, 2) + ";";
+  const ilanlarStr = "const ILANLAR = " + JSON.stringify(data, null, 2) + ";";
+  const content = `// ============================================================
+//  ⚙️  KONFİGÜRASYON — Kendi bilgilerinizi buraya girin
+// ============================================================
+${configStr}
+
+// ============================================================
+//  🏠  İLANLAR
+// ============================================================
+${ilanlarStr}
+`;
+  const blob = new Blob([content], { type: "text/javascript;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ilanlar.js";
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("📥 ilanlar.js indirildi. js/ klasörünüzdeki dosyayla değiştirin.");
+}
+
+// ---- TOAST ----
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ---- BOOTSTRAP ----
+document.addEventListener("DOMContentLoaded", () => {
+  if (!IS_LOCAL) {
+    // Railway/hosting: sunucu Basic Auth ile korudu, şifre ekranını atla
+    document.getElementById("pw-screen").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    document.getElementById("btn-download").style.display = "none";
+    document.getElementById("btn-publish").style.display  = "inline-flex";
+    document.getElementById("btn-save-form").textContent  = "💾 Kaydet ve Yayınla";
+    init();
+  } else if (sessionStorage.getItem("emlak_admin") === "1") {
+    document.getElementById("pw-screen").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    init();
+  } else {
+    document.getElementById("pw-input").focus();
+    document.getElementById("pw-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") checkPass();
+    });
+  }
+});
+</script>
+</body>
+</html>
