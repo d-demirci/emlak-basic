@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin1234';
 const GITHUB_TOKEN   = process.env.GITHUB_TOKEN   || '';
-const GITHUB_REPO    = process.env.GITHUB_REPO    || 'rascal97/emlak-vitrin';
+const GITHUB_REPO    = process.env.GITHUB_REPO    || 'd-demirci/emlak-basic';
 
 app.use(express.json({ limit: '2mb' }));
 
@@ -15,7 +15,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use('/admin.html', basicAuth({
   users: { 'admin': ADMIN_PASSWORD },
   challenge: true,
-  realm: 'Emlak Vitrin Admin'
+  realm: 'Emlak Basic Admin'
 }));
 
 // İlanları GitHub'a kaydet → Railway otomatik deploy tetiklenir
@@ -33,7 +33,7 @@ app.post('/api/save', async (req, res) => {
   const headers = {
     'Authorization': `token ${GITHUB_TOKEN}`,
     'Content-Type': 'application/json',
-    'User-Agent': 'emlak-vitrin-admin'
+    'User-Agent': 'emlak-basic-admin'
   };
 
   try {

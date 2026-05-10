@@ -6,7 +6,7 @@ const CONFIG = {
   whatsappNo: "905320000000",        // Başında + olmadan, 90 ile başlayarak
   isim: "Ad Soyad",
   unvan: "Gayrimenkul Danışmanı",
-  sirket: "Emlak Vitrin",
+  sirket: "Emlak Basic",
   slogan: "Güvenilir Gayrimenkul Danışmanlığı",
   adres: "Örnek Mah. Örnek Cad. No:1, İstanbul",
   email: "info@example.com",
