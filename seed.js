@@ -16,7 +16,7 @@ const CONFIG = {
   whatsappNo: "905320000000",
   isim:       "Ad Soyad",
   unvan:      "Gayrimenkul Danismani",
-  sirket:     "Emlak Basic",
+  sirket:     "Güven Emlak",
   slogan:     "Guvenilir Gayrimenkul Danismanlik",
   adres:      "Ornek Mah. Ornek Cad. No:1, Istanbul",
   email:      "info@example.com",

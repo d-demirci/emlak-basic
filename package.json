@@ -1,5 +1,5 @@
 {
-  "name": "emlak-basic",
+  "name": "guven-emlak",
   "version": "1.0.0",
   "scripts": {
     "start": "node server.js"
@@ -7,6 +7,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "express-basic-auth": "^1.2.1",
+    "express-rate-limit": "^8.5.1",
     "pg": "^8.20.0"
   }
 }
