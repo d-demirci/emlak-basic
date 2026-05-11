@@ -245,7 +245,7 @@
       <button class="adm-btn adm-btn-primary" onclick="showForm(null)">+ Yeni İlan Ekle</button>
     </div>
     <div class="info-bar">
-      ℹ️ Yaptığınız değişiklikler bu tarayıcıda otomatik kaydedilir. Siteyi farklı bir cihaza veya hostinge yükleyecekseniz <strong>📥 ilanlar.js İndir</strong> butonuna tıklayıp indirilen dosyayı <code>js/ilanlar.js</code> ile değiştirin.
+      ℹ️ Bu panel verileri doğrudan veritabanından okur ve kaydeder. Kaydettiğiniz değişiklikler anında canlı veriye yansır.
     </div>
     <div class="ilan-list" id="ilan-list"></div>
   </div>
@@ -428,8 +428,8 @@ const OZELLIK_LISTESI = [
   "Site İçi","7/24 Güvenlik","Depo","Garaj"
 ];
 
-let editingId = null;  // null = yeni ilan, number = düzenleme
-let customOzler = [];  // custom özellikler (checkbox dışı)
+let editingId = null;  // null = yeni ilan, number = duzenleme
+let customOzler = [];  // custom ozellikler (checkbox disi)
 let data = [];
 
 // ---- PASSWORD ----
@@ -453,29 +453,35 @@ function logout() {
 }
 
 // ---- INIT ----
-function init() {
-  loadData();
+async function init() {
+  await loadData();
   buildOzellikGrid();
   showList();
 }
 
-function loadData() {
-  if (!IS_LOCAL) {
-    // Railway: her zaman sunucudaki güncel ilanlar.js'den oku
-    data = deepCopy(ILANLAR);
-    return;
-  }
-  const stored = localStorage.getItem("emlak_ilanlar");
-  if (stored) {
-    try { data = JSON.parse(stored); } catch(e) { data = deepCopy(ILANLAR); }
-  } else {
-    data = deepCopy(ILANLAR);
+async function loadData() {
+  try {
+    const [configRes, ilanlarRes] = await Promise.all([
+      fetch('/api/config'),
+      fetch('/api/ilanlar')
+    ]);
+
+    if (!configRes.ok || !ilanlarRes.ok) {
+      throw new Error('Sunucudan veri alinamadi.');
+    }
+
+    CONFIG = await configRes.json();
+    const ilanlar = await ilanlarRes.json();
+    data = Array.isArray(ilanlar) ? deepCopy(ilanlar) : [];
+    ILANLAR.splice(0, ILANLAR.length, ...data);
+  } catch (e) {
+    showToast('❌ Veri yuklenemedi: ' + e.message);
+    data = deepCopy(ILANLAR || []);
   }
 }
 
 function saveData() {
-  localStorage.setItem("emlak_ilanlar", JSON.stringify(data));
-  // Live-update the global ILANLAR array so the site reflects changes immediately
+  // Live-update the global ILANLAR array so preview links reflect current edits
   ILANLAR.splice(0, ILANLAR.length, ...data);
 }
 
@@ -662,12 +668,11 @@ async function saveIlan() {
   }
 
   saveData();
+  const isEdit = editingId !== null;
   showList();
-
-  if (!IS_LOCAL) {
-    await publishIlanlar();
-  } else {
-    showToast(editingId !== null ? "✅ İlan güncellendi!" : "✅ Yeni ilan eklendi!");
+  const ok = await publishIlanlar();
+  if (ok) {
+    showToast(isEdit ? "✅ İlan güncellendi!" : "✅ Yeni ilan eklendi!");
   }
 }
 
@@ -683,9 +688,8 @@ async function confirmDelete(id) {
     data = data.filter(i => i.id !== id);
     saveData();
     showList();
-    if (!IS_LOCAL) {
-      await publishIlanlar();
-    } else {
+    const ok = await publishIlanlar();
+    if (ok) {
       showToast("🗑️ İlan silindi.");
     }
   }
@@ -765,10 +769,14 @@ async function publishIlanlar() {
     });
     const json = await res.json();
     showToast(json.ok ? '✅ ' + json.msg : '❌ ' + json.msg);
+    return !!json.ok;
   } catch (e) {
     showToast('❌ Bağlantı hatası: ' + e.message);
+    return false;
   }
-  if (btn) { btn.textContent = '🚀 Yayınla'; btn.disabled = false; }
+  finally {
+    if (btn) { btn.textContent = '🚀 Yayınla'; btn.disabled = false; }
+  }
 }
 
 // ---- DOWNLOAD ilanlar.js ----
@@ -816,6 +824,8 @@ document.addEventListener("DOMContentLoaded", () => {
   } else if (sessionStorage.getItem("emlak_admin") === "1") {
     document.getElementById("pw-screen").style.display = "none";
     document.getElementById("panel").style.display = "block";
+    document.getElementById("btn-publish").style.display  = "inline-flex";
+    document.getElementById("btn-save-form").textContent  = "💾 Kaydet ve Yayınla";
     init();
   } else {
     document.getElementById("pw-input").focus();
