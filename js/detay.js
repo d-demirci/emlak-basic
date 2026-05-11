@@ -7,7 +7,7 @@
   const DEFAULT_CONFIG = {
     telefon: "+90 532 000 00 00",
     whatsappNo: "905320000000",
-    sirket: "Emlak Basic",
+    sirket: "Güven Emlak",
     slogan: "Güvenilir Gayrimenkul Danışmanlığı",
     isim: "Ad Soyad",
     unvan: "Gayrimenkul Danışmanı",

@@ -1,12 +1,18 @@
-const express   = require('express');
-const basicAuth = require('express-basic-auth');
-const path      = require('path');
-const { Pool }  = require('pg');
+const express      = require('express');
+const basicAuth    = require('express-basic-auth');
+const rateLimit    = require('express-rate-limit');
+const path         = require('path');
+const { Pool }     = require('pg');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin1234';
+const adminAuth = basicAuth({
+  users: { 'admin': ADMIN_PASSWORD },
+  challenge: true,
+  realm: 'Güven Emlak Admin'
+});
 
 // ---- DB bağlantısı ----
 const pool = new Pool({
@@ -36,15 +42,28 @@ async function migrate() {
 
 app.use(express.json({ limit: '2mb' }));
 
+// ---- Rate limiters ----
+const publicLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 dakika
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Çok fazla istek. Lütfen 15 dakika sonra tekrar deneyin.' },
+});
+
+const saveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Çok fazla kayıt isteği. Lütfen 15 dakika sonra tekrar deneyin.' },
+});
+
 // ---- Admin sayfasını şifre ile koru ----
-app.use('/admin.html', basicAuth({
-  users: { 'admin': ADMIN_PASSWORD },
-  challenge: true,
-  realm: 'Emlak Basic Admin'
-}));
+app.use('/admin.html', adminAuth);
 
 // ---- GET /api/config ----
-app.get('/api/config', async (req, res) => {
+app.get('/api/config', publicLimiter, async (req, res) => {
   try {
     const result = await pool.query(`SELECT value FROM config WHERE key = 'main'`);
     if (result.rows.length === 0) return res.json({});
@@ -56,7 +75,7 @@ app.get('/api/config', async (req, res) => {
 });
 
 // ---- GET /api/ilanlar ----
-app.get('/api/ilanlar', async (req, res) => {
+app.get('/api/ilanlar', publicLimiter, async (req, res) => {
   try {
     const result = await pool.query(`SELECT data FROM ilanlar ORDER BY id ASC`);
     res.json(result.rows.map(r => r.data));
@@ -67,7 +86,7 @@ app.get('/api/ilanlar', async (req, res) => {
 });
 
 // ---- GET /api/ilanlar/:id ----
-app.get('/api/ilanlar/:id', async (req, res) => {
+app.get('/api/ilanlar/:id', publicLimiter, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (!Number.isInteger(id)) {
     return res.status(400).json({ error: 'Geçersiz ilan id.' });
@@ -86,7 +105,7 @@ app.get('/api/ilanlar/:id', async (req, res) => {
 });
 
 // ---- POST /api/save ----
-app.post('/api/save', async (req, res) => {
+app.post('/api/save', saveLimiter, adminAuth, async (req, res) => {
   const { config, ilanlar } = req.body;
   if (!Array.isArray(ilanlar)) {
     return res.status(400).json({ ok: false, msg: 'Geçersiz veri.' });
