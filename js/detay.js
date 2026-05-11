@@ -4,6 +4,15 @@
   let currentFotos = [];
   let lightboxIndex = 0;
 
+  const DEFAULT_CONFIG = {
+    telefon: "+90 532 000 00 00",
+    whatsappNo: "905320000000",
+    sirket: "Emlak Basic",
+    slogan: "Güvenilir Gayrimenkul Danışmanlığı",
+    isim: "Ad Soyad",
+    unvan: "Gayrimenkul Danışmanı",
+  };
+
   // ---- Helpers ----
   function setTextIfExists(id, text) {
     const el = document.getElementById(id);
@@ -20,29 +29,36 @@
 
   // ---- Config ----
   function applyConfig() {
-    const tel = CONFIG.telefon;
-    const waNo = CONFIG.whatsappNo;
+    const cfg = { ...DEFAULT_CONFIG, ...(CONFIG || {}) };
+    const tel = cfg.telefon;
+    const waNo = cfg.whatsappNo;
     const waUrl = `https://wa.me/${waNo}`;
     const telUrl = `tel:${tel.replace(/\s/g, "")}`;
 
-    setTextIfExists("h-sirket", CONFIG.sirket);
-    setTextIfExists("h-slogan", CONFIG.slogan);
+    setTextIfExists("h-sirket", cfg.sirket);
+    setTextIfExists("h-slogan", cfg.slogan);
     setTextIfExists("h-tel-text", tel);
     setHrefIfExists("h-tel-link", telUrl);
     setHrefIfExists("h-wa-link", waUrl);
-    setTextIfExists("f-sirket", CONFIG.sirket);
-    setTextIfExists("f-slogan", CONFIG.slogan);
+    setTextIfExists("f-sirket", cfg.sirket);
+    setTextIfExists("f-slogan", cfg.slogan);
     setHrefIfExists("wa-float", waUrl);
     setHrefIfExists("m-tel-link", telUrl);
     setHrefIfExists("m-wa-link", waUrl);
     setTextIfExists("m-tel-text", tel);
-    setTextIfExists("agent-name", CONFIG.isim);
-    setTextIfExists("agent-title", CONFIG.unvan);
-    setTextIfExists("f-copyright", `© ${new Date().getFullYear()} ${CONFIG.sirket}. Tüm hakları saklıdır.`);
+    setTextIfExists("agent-name", cfg.isim);
+    setTextIfExists("agent-title", cfg.unvan);
+    setTextIfExists("f-copyright", `© ${new Date().getFullYear()} ${cfg.sirket}. Tüm hakları saklıdır.`);
   }
 
   // ---- Load property ----
-  function loadIlan() {
+  async function fetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${url} isteği başarısız: ${res.status}`);
+    return res.json();
+  }
+
+  async function loadIlan() {
     const params = new URLSearchParams(window.location.search);
     const id = parseInt(params.get("id"), 10);
 
@@ -51,13 +67,25 @@
       return;
     }
 
-    const ilan = ILANLAR.find(i => i.id === id && i.aktif);
-    if (!ilan) {
-      showError("Bu ilan artık mevcut değil veya bulunamadı.");
-      return;
-    }
+    try {
+      const [configData, ilan] = await Promise.all([
+        fetchJson("/api/config"),
+        fetchJson(`/api/ilanlar/${id}`),
+      ]);
 
-    renderIlan(ilan);
+      CONFIG = configData || {};
+
+      if (!ilan || !ilan.aktif) {
+        showError("Bu ilan artık mevcut değil veya bulunamadı.");
+        return;
+      }
+
+      applyConfig();
+      renderIlan(ilan);
+    } catch (e) {
+      showError("Veriler yüklenemedi. Sunucuyu kontrol edip tekrar deneyin.");
+      console.error("İlan detayı yüklenemedi:", e.message);
+    }
   }
 
   function showError(msg) {
@@ -68,14 +96,15 @@
 
   // ---- Render ----
   function renderIlan(ilan) {
-    const tel = CONFIG.telefon;
-    const waNo = CONFIG.whatsappNo;
+    const cfg = { ...DEFAULT_CONFIG, ...(CONFIG || {}) };
+    const tel = cfg.telefon;
+    const waNo = cfg.whatsappNo;
     const waMsg = encodeURIComponent(`Merhaba, "${ilan.baslik}" ilanı hakkında bilgi almak istiyorum.`);
     const waUrl = `https://wa.me/${waNo}?text=${waMsg}`;
     const telUrl = `tel:${tel.replace(/\s/g, "")}`;
 
     // Page title & meta
-    document.title = `${ilan.baslik} — ${CONFIG.sirket}`;
+    document.title = `${ilan.baslik} — ${cfg.sirket}`;
     const metaDesc = document.getElementById("page-desc");
     if (metaDesc) metaDesc.setAttribute("content", `${ilan.fiyatText} | ${ilan.konum} | ${ilan.metrekare} m² ${ilan.oda}`);
 
@@ -280,7 +309,6 @@
 
   // ---- Init ----
   document.addEventListener("DOMContentLoaded", () => {
-    applyConfig();
     loadIlan();
     setupMenu();
   });

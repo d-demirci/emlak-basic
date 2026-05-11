@@ -4,6 +4,13 @@
   let aktifTip = "Tümü";
   let aktifKat = "Tümü";
 
+  const DEFAULT_CONFIG = {
+    telefon: "+90 532 000 00 00",
+    whatsappNo: "905320000000",
+    sirket: "Emlak Basic",
+    slogan: "Güvenilir Gayrimenkul Danışmanlığı",
+  };
+
   // URL parametresinden filtre başlangıcı
   const params = new URLSearchParams(window.location.search);
   const tipParam = params.get("tip");
@@ -13,19 +20,20 @@
 
   // ---- Config uygula ----
   function applyConfig() {
-    const tel = CONFIG.telefon;
-    const waNo = CONFIG.whatsappNo;
+    const cfg = { ...DEFAULT_CONFIG, ...(CONFIG || {}) };
+    const tel = cfg.telefon;
+    const waNo = cfg.whatsappNo;
     const waUrl = `https://wa.me/${waNo}`;
     const telUrl = `tel:${tel.replace(/\s/g, "")}`;
 
-    document.getElementById("page-title").textContent = `${CONFIG.sirket} — Gayrimenkul İlanları`;
-    setTextIfExists("h-sirket", CONFIG.sirket);
-    setTextIfExists("h-slogan", CONFIG.slogan);
+    document.getElementById("page-title").textContent = `${cfg.sirket} — Gayrimenkul İlanları`;
+    setTextIfExists("h-sirket", cfg.sirket);
+    setTextIfExists("h-slogan", cfg.slogan);
     setTextIfExists("h-tel-text", tel);
     setHrefIfExists("h-tel-link", telUrl);
     setHrefIfExists("h-wa-link", waUrl);
-    setTextIfExists("f-sirket", CONFIG.sirket);
-    setTextIfExists("f-slogan", CONFIG.slogan);
+    setTextIfExists("f-sirket", cfg.sirket);
+    setTextIfExists("f-slogan", cfg.slogan);
     setHrefIfExists("wa-float", waUrl);
     setHrefIfExists("m-tel-link", telUrl);
     setHrefIfExists("m-wa-link", waUrl);
@@ -33,11 +41,27 @@
     setHrefIfExists("c-tel-link", telUrl);
     setHrefIfExists("c-wa-link", waUrl);
     setTextIfExists("c-tel-text", tel);
-    setTextIfExists("f-copyright", `© ${new Date().getFullYear()} ${CONFIG.sirket}. Tüm hakları saklıdır.`);
+    setTextIfExists("f-copyright", `© ${new Date().getFullYear()} ${cfg.sirket}. Tüm hakları saklıdır.`);
 
     // Hero slogan
     const heroSlogan = document.getElementById("hero-slogan");
-    if (heroSlogan && CONFIG.slogan) heroSlogan.textContent = CONFIG.slogan;
+    if (heroSlogan && cfg.slogan) heroSlogan.textContent = cfg.slogan;
+  }
+
+  async function fetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${url} isteği başarısız: ${res.status}`);
+    return res.json();
+  }
+
+  async function loadInitialData() {
+    const [configData, ilanlarData] = await Promise.all([
+      fetchJson("/api/config"),
+      fetchJson("/api/ilanlar"),
+    ]);
+
+    CONFIG = configData || {};
+    ILANLAR = Array.isArray(ilanlarData) ? ilanlarData : [];
   }
 
   function setTextIfExists(id, text) {
@@ -221,18 +245,27 @@
   }
 
   // ---- Init ----
-  document.addEventListener("DOMContentLoaded", () => {
-    applyConfig();
-    renderStats();
-    setupFilters();
-    renderGrid();
-    setupMenu();
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      await loadInitialData();
+      applyConfig();
+      renderStats();
+      setupFilters();
+      renderGrid();
+      setupMenu();
 
-    // Filtre butonlarını URL'ye göre aktifleştir
-    if (tipParam === "Satılık" || tipParam === "Kiralık") {
-      document.querySelectorAll("#filter-tip .filter-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tip === aktifTip);
-      });
+      // Filtre butonlarını URL'ye göre aktifleştir
+      if (tipParam === "Satılık" || tipParam === "Kiralık") {
+        document.querySelectorAll("#filter-tip .filter-btn").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.tip === aktifTip);
+        });
+      }
+    } catch (e) {
+      console.error("Başlangıç verileri yüklenemedi:", e.message);
+      const grid = document.getElementById("ilanlar-grid");
+      if (grid) {
+        grid.innerHTML = `<div class="empty-state"><p>Veriler yüklenemedi. Sunucuyu kontrol edip sayfayı yenileyin.</p></div>`;
+      }
     }
   });
 })();
